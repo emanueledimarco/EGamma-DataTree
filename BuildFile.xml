@@ -1,0 +1,7 @@
+<use   root=""/>
+<use   name="root"/>
+<use   name="lhapdf"/>
+<flags   CXXFLAGS="-g -Wall"/>
+<export>
+  <lib   name="1"/>
+</export>
