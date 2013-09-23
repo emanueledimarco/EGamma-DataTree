@@ -28,7 +28,7 @@
 using namespace std;
 using namespace vecbos;
 
-void analysis(const string inputfile) {
+void analysis(const string inputfile, const string outputfile) {
 
   //*****************************************************************************************
   // Set up input
@@ -36,7 +36,7 @@ void analysis(const string inputfile) {
   TFile *infile=0;
   TTree *eventTree=0;
 
-  TFile *histosfile = TFile::Open("histos.root","recreate");
+  TFile *histosfile = TFile::Open(outputfile.c_str(),"recreate");
 
   // histograms to be filled
   TH1F *GenEta = new TH1F("GenEta", "", 25, -2.5, 2.5);
@@ -64,10 +64,14 @@ void analysis(const string inputfile) {
 
   // ID vars
   vector<TH1F*> ebvars, eevars;
-  ebvars.push_back(new TH1F("reso_eb","",20,-0.1,0.1));
-  ebvars.push_back(new TH1F("hoe_eb","",20,0,0.5));
-  ebvars.push_back(new TH1F("deta_eb","",20,-0.01,0.01));
-  ebvars.push_back(new TH1F("dphi_eb","",20,-0.1,0.1));
+  ebvars.push_back(new TH1F("reso_eb","",50,-0.2,0.2));
+  ebvars.push_back(new TH1F("resolo_eb","",50,-0.2,0.2));
+  ebvars.push_back(new TH1F("resohi_eb","",50,-0.2,0.2));
+  ebvars.push_back(new TH1F("hoe_eb","",50,0,0.15));
+  ebvars.push_back(new TH1F("deta_eb","",50,-0.02,0.02));
+  ebvars.push_back(new TH1F("dphi_eb","",50,-0.15,0.15));
+  ebvars.push_back(new TH1F("etareso_eb","",50,-0.1,0.1));
+  ebvars.push_back(new TH1F("phireso_eb","",50,-0.2,0.2));
   
   for(int i=0;i<(int)ebvars.size();++i) {
     TString nameeb(ebvars[i]->GetName());
@@ -144,11 +148,13 @@ void analysis(const string inputfile) {
       bool matches=false;
       float genpt=0;
       float geneta=-10.;
+      float genphi=-999.;
       for(int e=0;e<(int)geneles.size();++e) 
         if(fabs(geneles[e].DeltaR(theele))<0.01) {
           matches=true;
           genpt=geneles[e].Pt();
           geneta=geneles[e].Eta();
+          genphi=geneles[e].Phi();
         }
 
       if(matches) {
@@ -157,16 +163,24 @@ void analysis(const string inputfile) {
         if(ele->isEB) {
           RecoPtEB->Fill(genpt);
           ebvars[0]->Fill((ele->scEt-genpt)/genpt);
-          ebvars[1]->Fill(ele->HoverE);
-          ebvars[2]->Fill(ele->deltaEtaIn);
-          ebvars[3]->Fill(ele->deltaPhiIn);
+          if(genpt<20) ebvars[1]->Fill((ele->scEt-genpt)/genpt);
+          else ebvars[2]->Fill((ele->scEt-genpt)/genpt);
+          ebvars[3]->Fill(ele->HoverE);
+          ebvars[4]->Fill(ele->deltaEtaIn);
+          ebvars[5]->Fill(ele->deltaPhiIn);
+          ebvars[6]->Fill(ele->scEta-geneta);
+          ebvars[7]->Fill(ele->scPhi-genphi);
         }
         else {
           RecoPtEE->Fill(genpt);
           eevars[0]->Fill((ele->scEt-genpt)/genpt);
-          eevars[1]->Fill(ele->HoverE);
-          eevars[2]->Fill(ele->deltaEtaIn);
-          eevars[3]->Fill(ele->deltaPhiIn);
+          if(genpt<20) eevars[1]->Fill((ele->scEt-genpt)/genpt);
+          else eevars[2]->Fill((ele->scEt-genpt)/genpt);
+          eevars[3]->Fill(ele->HoverE);
+          eevars[4]->Fill(ele->deltaEtaIn);
+          eevars[5]->Fill(ele->deltaPhiIn);
+          eevars[6]->Fill(ele->scEta-geneta);
+          eevars[7]->Fill(ele->scPhi-genphi);
         }          
       }
 
@@ -212,7 +226,7 @@ void analysis(const string inputfile) {
   ElectronEffPtEE.Write();
 
   histosfile->cd();
-  for(int i=0;i<(int)ebvars.size();++i) {
+  for(int i=0;i<(int)eevars.size();++i) {
     ebvars[i]->Write();
     eevars[i]->Write();
   }
