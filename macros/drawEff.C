@@ -16,7 +16,7 @@
 using namespace std;
 
 void drawOneComparison(vector<TH1F*> histos, vector<TString> descr, TString xaxislabel, const char *filename, TPaveText *t=0) {
-
+  
   if(histos.size()>3) {
     cout << "more than 3 histos not implemented." << endl;
     return;
@@ -81,7 +81,6 @@ void drawOneComparison(vector<TH1F*> histos, vector<TString> descr, TString xaxi
   if(t) t->Draw();
 
   TString basename(filename);
-  basename.ReplaceAll("Eff","FR");
   c1->SaveAs(basename+TString(".png"));
   c1->SaveAs(basename+TString(".pdf"));
 
