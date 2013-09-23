@@ -9,6 +9,9 @@
 #include <TString.h>
 #include <TLegend.h>
 #include <TPaveText.h>
+#include <TROOT.h>
+
+#include <mystyle.C>
 
 using namespace std;
 
@@ -35,7 +38,7 @@ void drawOneComparison(vector<TH1F*> histos, vector<TString> descr, TString xaxi
   TCanvas *c1 = new TCanvas("c1", "c1", 600, 600);
   c1->SetGridx();
   c1->SetGridy();  
-  TLegend* legend = new TLegend(0.20, 0.50, 0.43, 0.66);
+  TLegend* legend = new TLegend(0.20, 0.20, 0.43, 0.36);
   legend->SetBorderSize(   0);
   legend->SetFillColor (   0);
   legend->SetTextAlign (  12);
@@ -57,7 +60,7 @@ void drawOneComparison(vector<TH1F*> histos, vector<TString> descr, TString xaxi
       histos[i]->GetFunction("pol1")->SetLineColor(colors[i]);
     }
     histos[i]->GetXaxis()->SetTitle(xaxislabel);
-    histos[i]->GetYaxis()->SetTitle("Loose #rightarrow Tight efficiency");
+    histos[i]->GetYaxis()->SetTitle("efficiency");
     histos[i]->GetYaxis()->SetTitleOffset(1.5);
 
     legend->AddEntry(histos[i],descr[i]);
@@ -66,10 +69,10 @@ void drawOneComparison(vector<TH1F*> histos, vector<TString> descr, TString xaxi
       histos[i]->Draw("pe1");
       for(int bin=1;bin<=histos[i]->GetNbinsX();bin++) {
 	//cout << "bin i = " << bin << ": " <<  histos[i]->GetBinContent(bin) << " +/- " << histos[i]->GetBinError(bin) << endl;
-	cout << "m35_fakeRate[" << bin << "] = " << histos[i]->GetBinContent(bin) << ";" << endl;
+	//	cout << "m35_fakeRate[" << bin << "] = " << histos[i]->GetBinContent(bin) << ";" << endl;
       }
       for(int bin=1;bin<=histos[i]->GetNbinsX();bin++) {
-	cout << "m35_fakeRate_err[" << bin << "] = " << histos[i]->GetBinError(bin) << ";" << endl;
+	//	cout << "m35_fakeRate_err[" << bin << "] = " << histos[i]->GetBinError(bin) << ";" << endl;
       }
     }
     else histos[i]->Draw("same pe1");
@@ -157,6 +160,9 @@ void drawOneToTwo(vector<TH1F*> set1, vector<TH1F*> set2, vector<TH1F*> set3, co
 
 void drawEff() {
   
+  gROOT->ProcessLine(".L mystyle.C+");
+  setstyle();
+
   TFile *file1 = TFile::Open("results_std.root");
   TFile *file2 = TFile::Open("results_pfseedingV2.root");
 
@@ -188,7 +194,7 @@ void drawEff() {
   ptSet2.push_back(RecoPtEB2);
   ptSet2.push_back(RecoPtEE2);
 
-  drawOneToOne(ptSet1,ptSet2,"ECAL Seeding","PFClu. Seeding","p_{T} [GeV]");
+  drawOneToOne(ptSet1,ptSet2,"ECAL Seeding","PFClu. Seeding","p_{T} (GeV)");
 
 }
 
