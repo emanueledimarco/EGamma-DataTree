@@ -1,0 +1,117 @@
+#include <iostream>
+#include <vector>
+
+#include <TFile.h>
+#include <TH1F.h>
+#include <TF1.h>
+#include <TCanvas.h>
+#include <TStyle.h>
+#include <TString.h>
+#include <TLegend.h>
+#include <TPaveText.h>
+#include <TROOT.h>
+
+#include <mystyle.C>
+
+void drawOne(TString var, TString title, const char* file1, const char* file2) {
+  
+  cout << "plotting " << var.Data() << endl;
+  
+  TFile *f1 = TFile::Open(file1);
+  TH1F *h1 = (TH1F*)f1->Get(var.Data());
+
+  TFile *f2 = TFile::Open(file2);
+  TH1F *h2 = (TH1F*)f2->Get(var.Data());
+
+  h1->Sumw2();
+  h2->Sumw2();
+  
+  float norm1 = h1->Integral();
+  float norm2 = h2->Integral();
+  h1->Scale(1./norm1);
+  h2->Scale(1./norm2);
+
+  float max = TMath::Max(h1->GetMaximum(),h2->GetMaximum());
+  max = max + 0.2 * max;
+  h2->SetMaximum(max);
+
+  h1->SetLineColor(kAzure+3);
+  h1->SetLineWidth(2);
+  h1->SetFillColor(kAzure+5);
+  h1->SetFillStyle(1001);
+
+  h2->SetLineColor(kOrange+2);
+  h2->SetLineWidth(2);
+  h2->SetFillColor(kOrange+1);
+  h2->SetFillStyle(3002);
+
+  // draw the legend
+  TLegend* legend = new TLegend(0.65, 0.75, 0.85, 0.85);
+  legend->SetBorderSize(     0);
+  legend->SetFillColor (     0);
+  legend->SetTextAlign (    12);
+  legend->SetTextFont  (    42);
+  legend->SetTextSize  (0.031);
+  legend->AddEntry(h1, "ECAL clu.", "f");
+  legend->AddEntry(h2, "PF clu.", "f");
+
+  // cosmetics
+
+  TCanvas c1("c1","",600,600);
+  c1.cd();
+
+  if(var.Contains("HoE")) {
+    h1->SetMinimum(1);
+    c1.SetLogy();
+  }
+
+  h1->GetXaxis()->SetTitle(title);
+  h1->GetYaxis()->SetTitle("a.u.");
+  h1->GetYaxis()->SetTitleOffset(1.8);
+  h1->GetXaxis()->SetTitleOffset(1.0);
+  h1->GetXaxis()->SetTitleSize(0.04);
+  h1->GetYaxis()->SetTitleSize(0.04);
+  h1->Draw("hist");
+  h2->Draw("same hist");
+
+  legend->Draw();
+  
+  TString pdf = TString(var)+TString(".pdf");
+  TString png = TString(var)+TString(".png");
+  TString macro = TString(var)+TString(".C");
+
+  c1.SaveAs(pdf);
+  c1.SaveAs(png);
+  c1.SaveAs(macro);
+
+}
+
+void drawVars(const char *file1, const char* file2) {
+
+  gROOT->ProcessLine(".L mystyle.C+");
+  setstyle();
+
+  vector<TString> vars;
+  vars.push_back("reso_eb");
+  vars.push_back("hoe_eb");
+  vars.push_back("deta_eb");
+  vars.push_back("dphi_eb");
+  vars.push_back("etareso_eb");
+  vars.push_back("phireso_eb");
+
+  vector<TString> titles;
+  titles.push_back("#DeltaE/E");
+  titles.push_back("H/E");
+  titles.push_back("#Delta#eta_{in}");
+  titles.push_back("#Delta#phi_{in}");
+  titles.push_back("#eta_{SC}-#eta_{true}");
+  titles.push_back("#phi_{SC}-#phi_{true}");
+
+  for(int i=0;i<(int)vars.size();++i) {
+    drawOne(vars[i],titles[i],file1,file2);
+    TString nameee = vars[i].ReplaceAll("_eb","_ee");
+    drawOne(nameee,titles[i],file1,file2);
+  }
+
+
+}
