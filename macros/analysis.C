@@ -35,7 +35,9 @@ void analysis(const string inputfile) {
   //*****************************************************************************************
   TFile *infile=0;
   TTree *eventTree=0;
-  
+
+  TFile *histosfile = TFile::Open("histos.root","recreate");
+
   // histograms to be filled
   TH1F *GenEta = new TH1F("GenEta", "", 25, -2.5, 2.5);
   TH1F *RecoEta = (TH1F*)GenEta->Clone("RecoEta");
@@ -58,6 +60,20 @@ void analysis(const string inputfile) {
   TH1F *RecoPt = (TH1F*)GenPt->Clone("RecoPt");
   TH1F *RecoPtEB = (TH1F*)GenPt->Clone("RecoPtEB");
   TH1F *RecoPtEE = (TH1F*)GenPt->Clone("RecoPtEE");
+
+
+  // ID vars
+  vector<TH1F*> ebvars, eevars;
+  ebvars.push_back(new TH1F("reso_eb","",20,-0.1,0.1));
+  ebvars.push_back(new TH1F("hoe_eb","",20,0,0.5));
+  ebvars.push_back(new TH1F("deta_eb","",20,-0.01,0.01));
+  ebvars.push_back(new TH1F("dphi_eb","",20,-0.1,0.1));
+  
+  for(int i=0;i<(int)ebvars.size();++i) {
+    TString nameeb(ebvars[i]->GetName());
+    TString nameee = nameeb.ReplaceAll("_eb","_ee");
+    eevars.push_back((TH1F*)ebvars[i]->Clone(nameee));
+  }
 
   // Data structures to store info from TTrees
   egmana::TEventInfo *info  = new egmana::TEventInfo();
@@ -138,8 +154,20 @@ void analysis(const string inputfile) {
       if(matches) {
         RecoEta->Fill(geneta);
         RecoPt->Fill(genpt);
-        if(fabs(ele->eta)<1.479) RecoPtEB->Fill(genpt);
-        else RecoPtEE->Fill(genpt);
+        if(ele->isEB) {
+          RecoPtEB->Fill(genpt);
+          ebvars[0]->Fill((ele->scEt-genpt)/genpt);
+          ebvars[1]->Fill(ele->HoverE);
+          ebvars[2]->Fill(ele->deltaEtaIn);
+          ebvars[3]->Fill(ele->deltaPhiIn);
+        }
+        else {
+          RecoPtEE->Fill(genpt);
+          eevars[0]->Fill((ele->scEt-genpt)/genpt);
+          eevars[1]->Fill(ele->HoverE);
+          eevars[2]->Fill(ele->deltaEtaIn);
+          eevars[3]->Fill(ele->deltaPhiIn);
+        }          
       }
 
     }
@@ -183,4 +211,11 @@ void analysis(const string inputfile) {
   ElectronEffPtEE.ComputeEfficiencies();
   ElectronEffPtEE.Write();
 
+  histosfile->cd();
+  for(int i=0;i<(int)ebvars.size();++i) {
+    ebvars[i]->Write();
+    eevars[i]->Write();
+  }
+  histosfile->Close();
+  
 }
