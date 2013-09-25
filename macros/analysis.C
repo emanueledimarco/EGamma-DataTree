@@ -70,8 +70,15 @@ void analysis(const string inputfile, const string outputfile) {
   ebvars.push_back(new TH1F("hoe_eb","",50,0,0.15));
   ebvars.push_back(new TH1F("deta_eb","",50,-0.02,0.02));
   ebvars.push_back(new TH1F("dphi_eb","",50,-0.15,0.15));
-  ebvars.push_back(new TH1F("etareso_eb","",50,-0.1,0.1));
+  ebvars.push_back(new TH1F("etareso_eb","",50,-0.02,0.02));
   ebvars.push_back(new TH1F("phireso_eb","",50,-0.2,0.2));
+  ebvars.push_back(new TH1F("drreso_eb","",50,0.,0.1));
+  ebvars.push_back(new TH1F("etaresop_eb","",50,-0.02,0.02));
+  ebvars.push_back(new TH1F("phiresop_eb","",50,-0.2,0.2));
+  ebvars.push_back(new TH1F("drresop_eb","",50,0.,0.1));
+  ebvars.push_back(new TH1F("etareson_eb","",50,-0.02,0.02));
+  ebvars.push_back(new TH1F("phireson_eb","",50,-0.2,0.2));
+  ebvars.push_back(new TH1F("drreson_eb","",50,0.,0.1));
   
   for(int i=0;i<(int)ebvars.size();++i) {
     TString nameeb(ebvars[i]->GetName());
@@ -97,6 +104,7 @@ void analysis(const string inputfile, const string outputfile) {
 
   
   vector<TVector3> geneles;
+  vector<int> genpdgid;
 
   // loop over events
   for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
@@ -108,6 +116,13 @@ void analysis(const string inputfile, const string outputfile) {
 
     genparticleBr->GetEntry(ientry);
     electronBr->GetEntry(ientry);
+
+    //***********************************************************
+    // Event information
+    //***********************************************************
+    TVector3 genVtxPos(info->pvx,info->pvy,info->pvz);
+    // TVector3 genVtxPos(0,0,info->pvz);  
+    //    cout << info->pvz << " cm" << endl;
 
     //***********************************************************
     // Gen-Level particles
@@ -122,6 +137,7 @@ void analysis(const string inputfile, const string outputfile) {
       TVector3 thegenele;
       thegenele.SetPtEtaPhi(p->pt,p->eta,p->phi);
       geneles.push_back(thegenele);
+      genpdgid.push_back(p->pdgid);
 
       GenEta->Fill(p->eta);
       GenPt->Fill(p->pt);
@@ -145,42 +161,48 @@ void analysis(const string inputfile, const string outputfile) {
       TVector3 theele;
       theele.SetPtEtaPhi(ele->pt,ele->eta,ele->phi);
       
-      bool matches=false;
-      float genpt=0;
-      float geneta=-10.;
-      float genphi=-999.;
+      int truee=-1;
       for(int e=0;e<(int)geneles.size();++e) 
-        if(fabs(geneles[e].DeltaR(theele))<0.01) {
-          matches=true;
-          genpt=geneles[e].Pt();
-          geneta=geneles[e].Eta();
-          genphi=geneles[e].Phi();
-        }
+        if(fabs(geneles[e].DeltaR(theele))<0.01) truee=e;
 
-      if(matches) {
-        RecoEta->Fill(geneta);
-        RecoPt->Fill(genpt);
+      if(truee>0) {
+        TVector3 scPos(ele->scX,ele->scY,ele->scZ);
+        
+        TVector3 corrScPos=scPos-genVtxPos;
+
+        RecoEta->Fill(geneles[truee].Eta());
+        RecoPt->Fill(geneles[truee].Pt());
         if(ele->isEB) {
-          RecoPtEB->Fill(genpt);
-          ebvars[0]->Fill((ele->scEt-genpt)/genpt);
-          if(genpt<20) ebvars[1]->Fill((ele->scEt-genpt)/genpt);
-          else ebvars[2]->Fill((ele->scEt-genpt)/genpt);
+          RecoPtEB->Fill(geneles[truee].Pt());
+          ebvars[0]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
+          if(geneles[truee].Pt()<20) ebvars[1]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
+          else ebvars[2]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
           ebvars[3]->Fill(ele->HoverE);
           ebvars[4]->Fill(ele->deltaEtaIn);
           ebvars[5]->Fill(ele->deltaPhiIn);
-          ebvars[6]->Fill(ele->scEta-geneta);
-          ebvars[7]->Fill(ele->scPhi-genphi);
+          ebvars[6]->Fill(corrScPos.Eta()-geneles[truee].Eta());
+          ebvars[7]->Fill(corrScPos.Phi()-geneles[truee].Phi());
+          ebvars[8]->Fill(corrScPos.DeltaR(geneles[truee]));
+          int c = (genpdgid[truee]>0) ? 0 : 3;
+          ebvars[9+c]->Fill(corrScPos.Eta()-geneles[truee].Eta());
+          ebvars[10+c]->Fill(corrScPos.Phi()-geneles[truee].Phi());
+          ebvars[11+c]->Fill(corrScPos.DeltaR(geneles[truee]));            
         }
         else {
-          RecoPtEE->Fill(genpt);
-          eevars[0]->Fill((ele->scEt-genpt)/genpt);
-          if(genpt<20) eevars[1]->Fill((ele->scEt-genpt)/genpt);
-          else eevars[2]->Fill((ele->scEt-genpt)/genpt);
+          RecoPtEE->Fill(geneles[truee].Pt());
+          eevars[0]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
+          if(geneles[truee].Pt()<20) eevars[1]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
+          else eevars[2]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
           eevars[3]->Fill(ele->HoverE);
           eevars[4]->Fill(ele->deltaEtaIn);
           eevars[5]->Fill(ele->deltaPhiIn);
-          eevars[6]->Fill(ele->scEta-geneta);
-          eevars[7]->Fill(ele->scPhi-genphi);
+          eevars[6]->Fill(corrScPos.Eta()-geneles[truee].Eta());
+          eevars[7]->Fill(corrScPos.Phi()-geneles[truee].Phi());
+          eevars[8]->Fill(corrScPos.DeltaR(geneles[truee]));
+          int c = (genpdgid[truee]>0) ? 0 : 3;
+          eevars[9+c]->Fill(corrScPos.Eta()-geneles[truee].Eta());
+          eevars[10+c]->Fill(corrScPos.Phi()-geneles[truee].Phi());
+          eevars[11+c]->Fill(corrScPos.DeltaR(geneles[truee]));            
         }          
       }
 
