@@ -77,6 +77,7 @@ class ElectronNtupler : public edm::EDAnalyzer {
     //OPTIONS
     //***************************************************************************
     bool                  fPrintDebug;
+    bool                  fReadAOD;         // flag whether to not dump variables that are only in RECO
     bool                  fUseGen;          // flag whether to look at generator info
     bool                  fFillGenOnly;     // flag to skip reco objects       
     bool                  fFillEGRegressionVars; //flat to fill geometry dependent variables

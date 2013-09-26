@@ -23,6 +23,8 @@
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
 #include "RecoEgamma/EgammaTools/interface/EcalClusterLocal.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h" 
+#include "DataFormats/EgammaReco/interface/ElectronSeed.h"
+#include "DataFormats/EgammaReco/interface/ElectronSeedFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
@@ -55,6 +57,7 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig)
   fElectronsSrcName = iConfig.getParameter<string> ("ElectronsSrcName");
 
   //   debug_ = iConfig.getParameter<int> ("debugLevel");
+  fReadAOD = iConfig.getParameter<bool> ("ReadAOD");
   fUseGen = iConfig.getParameter<bool> ("UseGen");
   fPrintDebug = iConfig.getParameter<bool> ("PrintDebug");
   fFillEGRegressionVars = iConfig.getParameter<bool> ("FillEGRegressionVars");
@@ -496,6 +499,16 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
         pElectron->EtaCrySeed = -999;
         pElectron->PhiCrySeed = -999;
       }
+    }
+
+    if(!fReadAOD) {
+      // track extra does not exist in AOD
+      edm::RefToBase<TrajectorySeed> seed = iE->gsfTrack()->extra()->seedRef();
+      ElectronSeedRef elseed=seed.castTo<ElectronSeedRef>();
+      pElectron->TkSeedDPhi2 = elseed->dPhi2();
+      pElectron->TkSeedDRZ2 = elseed->dRz2();
+      pElectron->TkSeedSubDet2 = elseed->subDet2();
+      pElectron->TkHitsMask = elseed->hitsMask();
     }
 
   } //loop over electrons

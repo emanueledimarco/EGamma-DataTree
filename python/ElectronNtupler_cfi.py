@@ -8,6 +8,7 @@ myElectronNtupler = cms.EDAnalyzer('ElectronNtupler',
                                    ElectronsSrcName = cms.string('gsfElectrons'),
                                    debugLevel = cms.int32(0),
                                    UseGen = cms.bool(True),
+                                   ReadAOD = cms.bool(False),
                                    PrintDebug = cms.bool(True),
                                    FillEGRegressionVars = cms.bool(False),
                                    
