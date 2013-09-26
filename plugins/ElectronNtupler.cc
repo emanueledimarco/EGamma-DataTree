@@ -341,6 +341,10 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
       pElectron->scEt        = iE->superCluster()->energy() / cosh( iE->superCluster()->eta() ) ;
       pElectron->scEta           = iE->superCluster()->eta();
       pElectron->scPhi           = iE->superCluster()->phi();
+
+      pElectron->scX         = iE->superCluster()->x();
+      pElectron->scY         = iE->superCluster()->y();
+      pElectron->scZ         = iE->superCluster()->z();
     }
 
     pElectron->q               = iE->charge();

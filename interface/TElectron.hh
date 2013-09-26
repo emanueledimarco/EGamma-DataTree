@@ -17,6 +17,9 @@ namespace egmana
         scEt = 0;
         scEta = -999;
         scPhi = -999;
+        scX = -999;
+        scY = -999;
+        scZ = -999;
         q = -99;  
         isEcalDriven = false;
         isTrackerDriven = false;
@@ -115,6 +118,7 @@ namespace egmana
     
       Float_t pt, eta, phi, p;     // kinematics, p is bestTrack momentum
       Float_t scEt, scEta, scPhi;  // supercluster
+      Float_t scX, scY, scZ;       // supercluster  position
       Int_t q;                     // charge
 
       Bool_t isEcalDriven;         // is ECAL seeded electron?
