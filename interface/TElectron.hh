@@ -107,6 +107,11 @@ namespace egmana
         EtaCrySeed = -999;
         PhiCrySeed = -999;
 
+        TkSeedDPhi2 = -999.;
+        TkSeedDRZ2 = -999.;
+        TkSeedSubDet2 = -999.;
+        TkHitsMask = -1;
+
         NSCMatchedPFCandidates = 0;
         for(int k=0; k<10;++k) SCMatchedPFCandidateIndex[k] = 0;
         NGsfTrackMatchedPFCandidates = 0;
@@ -206,6 +211,12 @@ namespace egmana
       Float_t IPhiSeed;
       Float_t EtaCrySeed;
       Float_t PhiCrySeed;
+    
+      // seeding variables (only from RECO,not from AOD)
+      Float_t TkSeedDPhi2;
+      Float_t TkSeedDRZ2;
+      Float_t TkSeedSubDet2;
+      UChar_t TkHitsMask;
 
       //for match to pf candidates
       UInt_t NSCMatchedPFCandidates;
