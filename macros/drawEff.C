@@ -163,7 +163,7 @@ void drawEff() {
   setstyle();
 
   TFile *file1 = TFile::Open("results_std.root");
-  TFile *file2 = TFile::Open("results_pfseedingV2.root");
+  TFile *file2 = TFile::Open("results_pf.root");
 
   // eta
   TH1F *RecoEta1 = (TH1F*)file1->Get("RecoEta_Eff");
