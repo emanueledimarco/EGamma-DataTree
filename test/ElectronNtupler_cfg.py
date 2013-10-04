@@ -24,13 +24,13 @@ process.source = cms.Source("PoolSource",
                             # replace 'myfile.root' with the source file you want to use
                             fileNames = cms.untracked.vstring(
     # my RECO with pfseeding V3
-#      'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_10.root',
-#      'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_2.root',
-#      'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_3.root',
-#      'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_5.root',
-#      'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_6.root',
-#      'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_7.root',
-#      'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_9.root'
+#     'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_10.root',
+#     'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_2.root',
+#     'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_3.root',
+#     'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_5.root',
+#     'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_6.root',
+#     'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_7.root',
+#     'file:/cmsrm/pc24_2/emanuele/data/egamma/pfseedingV3/electrons_9.root'
 '/store/relval/CMSSW_7_0_0_pre3/RelValZEE/GEN-SIM-RECO/PU_PRE_ST62_V8-v1/00000/145F25B8-1613-E311-8A60-002481E0FE70.root',
 '/store/relval/CMSSW_7_0_0_pre3/RelValZEE/GEN-SIM-RECO/PU_PRE_ST62_V8-v1/00000/88283733-1513-E311-9623-003048D2C1E0.root',
 '/store/relval/CMSSW_7_0_0_pre3/RelValZEE/GEN-SIM-RECO/PU_PRE_ST62_V8-v1/00000/D063B956-E113-E311-948E-02163E008E5A.root',
