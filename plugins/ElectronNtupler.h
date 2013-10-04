@@ -26,6 +26,8 @@ using namespace edm;
 #include "EGamma/DataTree/interface/TEventInfo.hh"
 #include "EGamma/DataTree/interface/TGenParticle.hh"
 #include "EGamma/DataTree/interface/TElectron.hh"
+#include "EGamma/DataTree/interface/TSeed.hh"
+#include "EGamma/DataTree/interface/TTrack.hh"
 #include "EGamma/DataTree/interface/TVertex.hh"
 #include <TClonesArray.h>
 
@@ -59,6 +61,7 @@ class ElectronNtupler : public edm::EDAnalyzer {
     string fPrimaryVerticesSrcName;
     string fPrimaryVerticesBSSrcName;
     string fElectronsSrcName;
+    string fGsfTrackSrcName;
 
     //***************************************************************************
     //OUTPUT
@@ -66,6 +69,8 @@ class ElectronNtupler : public edm::EDAnalyzer {
     egmana::TEventInfo      fEventInfo;       // general event information
     TClonesArray           *fGenParticleArr;  // genparticle array
     TClonesArray           *fElectronArr;     // electron array
+    TClonesArray           *fGsfTrackArr;     // electron gsf track array
+    TClonesArray           *fSeedArr;         // electron seeds array
     TClonesArray           *fVertexArr;       // Vertex array
     
     TFile                  *fOutputFile;      // output file handle
@@ -77,7 +82,8 @@ class ElectronNtupler : public edm::EDAnalyzer {
     //OPTIONS
     //***************************************************************************
     bool                  fPrintDebug;
-    bool                  fReadAOD;         // flag whether to not dump variables that are only in RECO
+    bool                  fReadAOD;         // flag whether to not dump v
+    bool                  fDumpSeeds;       // dump the ecal-driven seeds
     bool                  fUseGen;          // flag whether to look at generator info
     bool                  fFillGenOnly;     // flag to skip reco objects       
     bool                  fFillEGRegressionVars; //flat to fill geometry dependent variables

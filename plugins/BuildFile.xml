@@ -17,6 +17,9 @@
 <use   name="SimDataFormats/PileupSummaryInfo"/>
 <use   name="SimDataFormats/JetMatching"/>
 <use   name="HLTrigger/HLTcore"/>
+<use   name="Geometry/TrackerGeometryBuilder"/>
+<use   name="MagneticField/Engine"/>
+<use   name="MagneticField/Records"/>
 <use   name="EGamma/DataTree"/>
 <flags   EDM_PLUGIN="1"/>
 <export>

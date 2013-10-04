@@ -35,7 +35,12 @@
 #include "DataFormats/METReco/interface/PFMETCollection.h"
 #include "DataFormats/METReco/interface/PFMET.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
-
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "DataFormats/TrajectorySeed/interface/TrajectorySeedCollection.h"
+#include "Geometry/CommonDetUnit/interface/GeomDet.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
+#include "TrackingTools/PatternTools/interface/TSCBLBuilderNoMaterial.h"
 
 using namespace std;
 using namespace edm;
@@ -55,9 +60,11 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig)
   fPrimaryVerticesSrcName = iConfig.getParameter<string> ("PrimaryVerticesSrcName");
   fPrimaryVerticesBSSrcName = iConfig.getParameter<string> ("PrimaryVerticesBSSrcName");
   fElectronsSrcName = iConfig.getParameter<string> ("ElectronsSrcName");
+  fGsfTrackSrcName = iConfig.getParameter<string> ("GsfTrackSrcName");
 
   //   debug_ = iConfig.getParameter<int> ("debugLevel");
   fReadAOD = iConfig.getParameter<bool> ("ReadAOD");
+  fDumpSeeds = iConfig.getParameter<bool> ("DumpSeeds");
   fUseGen = iConfig.getParameter<bool> ("UseGen");
   fPrintDebug = iConfig.getParameter<bool> ("PrintDebug");
   fFillEGRegressionVars = iConfig.getParameter<bool> ("FillEGRegressionVars");
@@ -74,6 +81,8 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig)
   egmana::TEventInfo::Class()->IgnoreTObjectStreamer();
   egmana::TGenParticle::Class()->IgnoreTObjectStreamer();
   egmana::TElectron::Class()->IgnoreTObjectStreamer();
+  egmana::TTrack::Class()->IgnoreTObjectStreamer();
+  egmana::TSeed::Class()->IgnoreTObjectStreamer();
   egmana::TVertex::Class()->IgnoreTObjectStreamer();
   
   nEventsProcessed  =0;
@@ -106,6 +115,8 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
   nEventsProcessed++; 
   fGenParticleArr->Clear();
   fElectronArr->Clear();
+  fGsfTrackArr->Clear();
+  fSeedArr->Clear();
   fVertexArr->Clear();
 
   //***************************************************************
@@ -298,6 +309,16 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
   Handle<reco::BeamSpot> hBeamSpotProduct;
   GetProduct("offlineBeamSpot", hBeamSpotProduct, event);
   const reco::BeamSpot *inBeamSpot = hBeamSpotProduct.product();  
+
+
+  //****************************************************************************************************
+  // Magnetic field and geometry
+  //****************************************************************************************************   
+  ESHandle<MagneticField> magField;
+  setup.get<IdealMagneticFieldRecord>().get(magField);
+
+  ESHandle<TrackerGeometry> pDD;
+  setup.get<TrackerDigiGeometryRecord>().get(pDD);
 
 
   //****************************************************************************************************
@@ -509,9 +530,86 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
       pElectron->TkSeedDRZ2 = elseed->dRz2();
       pElectron->TkSeedSubDet2 = elseed->subDet2();
       pElectron->TkHitsMask = elseed->hitsMask();
+
+      
     }
 
   } //loop over electrons
+
+
+  //****************************************************************************************************
+  //Handle to Seeds
+  //****************************************************************************************************
+  if(fDumpSeeds) {
+    Handle<ElectronSeedCollection> hSeedsProduct;
+    GetProduct("ecalDrivenElectronSeeds", hSeedsProduct, event);
+    const ElectronSeedCollection seeds = *(hSeedsProduct.product());
+
+    for (ElectronSeedCollection::const_iterator iS = seeds.begin(); 
+         iS != seeds.end(); ++iS) {
+
+      TClonesArray &rSeedArr = *fSeedArr;
+      assert(rSeedArr.GetEntries() < rSeedArr.GetSize());
+      const Int_t index = rSeedArr.GetEntries();  
+      new(rSeedArr[index]) egmana::TSeed();
+      egmana::TSeed *pSeed = (egmana::TSeed*)rSeedArr[index];
+
+      const GeomDet *detcc=0;
+      ElectronSeed::const_iterator hit=iS->recHits().first;
+      ElectronSeed::const_iterator hit_end=iS->recHits().second;
+      math::XYZVector mom(0,0,0);
+      for(;hit!=hit_end;++hit){
+        detcc = pDD->idToDet(((*hit)).geographicalId());
+        TrajectoryStateOnSurface t = trajectoryStateTransform::transientState(iS->startingState(), &(detcc->surface()), &(*magField));
+
+        const FreeTrajectoryState & stateForProjectionToBeamLine= *t.freeState();
+        TSCBLBuilderNoMaterial tscblBuilder;
+        TrajectoryStateClosestToBeamLine tscbl = tscblBuilder(stateForProjectionToBeamLine,*inBeamSpot);
+
+        GlobalVector p = tscbl.trackStateAtPCA().momentum();
+        // for some unknow reason, the best estimate of the direction (closer to the GSF track 
+        // comes from the last hit and not from the first)
+        mom.SetXYZ( p.x(), p.y(), p.z() );
+        cout << " BeamExtrapolation momentum eta,phi " << mom.eta() << ", " <<  mom.phi() <<  endl;
+      }
+
+
+      pSeed->x = mom.x();
+      pSeed->y = mom.y();
+      pSeed->z = mom.z();
+
+    } // loop over seeds
+  }
+
+
+  //****************************************************************************************************
+  //Handle to GsfTracks
+  //****************************************************************************************************
+  Handle<reco::GsfTrackCollection> hGsfTrackProduct;
+  GetProduct(fGsfTrackSrcName, hGsfTrackProduct, event);
+  const reco::GsfTrackCollection inGsfTracks = *(hGsfTrackProduct.product());
+ 
+  for (reco::GsfTrackCollection::const_iterator iT = inGsfTracks.begin(); 
+       iT != inGsfTracks.end(); ++iT) {
+    
+    TClonesArray &rGsfTrackArr = *fGsfTrackArr;
+    assert(rGsfTrackArr.GetEntries() < rGsfTrackArr.GetSize());
+    const Int_t index = rGsfTrackArr.GetEntries();  
+    new(rGsfTrackArr[index]) egmana::TTrack();
+    egmana::TTrack *pGsfTrack = (egmana::TTrack*)rGsfTrackArr[index];
+
+    pGsfTrack->pt = iT->pt();
+    pGsfTrack->eta = iT->eta();
+    pGsfTrack->phi = iT->phi();
+
+    pGsfTrack->vx = iT->vx();
+    pGsfTrack->vy = iT->vy();
+    pGsfTrack->vz = iT->vz();
+    
+    pGsfTrack->q = iT->charge();
+
+  }
+
 
 
   //
@@ -561,6 +659,8 @@ ElectronNtupler::beginJob()
   //************************************************************************************************
   fGenParticleArr = new TClonesArray("egmana::TGenParticle"); assert(fGenParticleArr);
   fElectronArr    = new TClonesArray("egmana::TElectron");    assert(fElectronArr);
+  fGsfTrackArr    = new TClonesArray("egmana::TTrack");       assert(fGsfTrackArr);
+  fSeedArr        = new TClonesArray("egmana::TSeed");        assert(fSeedArr);
   fVertexArr      = new TClonesArray("egmana::TVertex");      assert(fVertexArr);
 
   //************************************************************************************************
@@ -579,6 +679,8 @@ ElectronNtupler::beginJob()
   }
 
   fEventTree->Branch("Electron",   &fElectronArr);
+  fEventTree->Branch("GsfTrack",   &fGsfTrackArr);
+  fEventTree->Branch("Seed",       &fSeedArr);
   fEventTree->Branch("Vertex",     &fVertexArr);
 
   cout<<" ElectronNtupler tree branches defined.. " <<endl; 
@@ -627,6 +729,8 @@ ElectronNtupler::endJob()
   
   delete fGenParticleArr;
   delete fElectronArr;
+  delete fGsfTrackArr;
+  delete fSeedArr;
   delete fVertexArr;
 
 }
