@@ -20,6 +20,7 @@
 #include "EGamma/DataTree/interface/TEventInfo.hh"
 #include "EGamma/DataTree/interface/TGenParticle.hh"
 #include "EGamma/DataTree/interface/TElectron.hh"
+#include "EGamma/DataTree/interface/TTrack.hh"
 
 #include "AnalysisTools/Common/interface/EfficiencyEvaluator.hh"
 
@@ -79,6 +80,14 @@ void analysis(const string inputfile, const string outputfile) {
   ebvars.push_back(new TH1F("etareson_eb","",50,-0.02,0.02));
   ebvars.push_back(new TH1F("phireson_eb","",50,-0.2,0.2));
   ebvars.push_back(new TH1F("drreson_eb","",50,0.,0.1));
+
+  ebvars.push_back(new TH1F("seedsubdet2_eb","",11,0,11));
+  ebvars.push_back(new TH1F("seedhitsmask_eb","",13,0,13));
+  ebvars.push_back(new TH1F("seedhitsmaskBPIX2_eb","",13,0,13));
+  ebvars.push_back(new TH1F("seedhitsmaskFPIX2_eb","",13,0,13));
+  ebvars.push_back(new TH1F("seedhitsmaskTEC2_eb","",13,0,13));
+  ebvars.push_back(new TH1F("seeddphi2_eb","",50,0,0.01));
+  ebvars.push_back(new TH1F("seedrz2_eb","",50,0,0.03));
   
   for(int i=0;i<(int)ebvars.size();++i) {
     TString nameeb(ebvars[i]->GetName());
@@ -90,6 +99,7 @@ void analysis(const string inputfile, const string outputfile) {
   egmana::TEventInfo *info  = new egmana::TEventInfo();
   TClonesArray *genparticleArr = new TClonesArray("egmana::TGenParticle");
   TClonesArray *electronArr = new TClonesArray("egmana::TElectron");
+  TClonesArray *gsftrackArr = new TClonesArray("egmana::TTrack");
 
   // Read input file and get the TTrees
   cout << "Processing " << inputfile << "..." << endl;
@@ -100,6 +110,7 @@ void analysis(const string inputfile, const string outputfile) {
   eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
   eventTree->SetBranchAddress("GenParticle", &genparticleArr); TBranch *genparticleBr = eventTree->GetBranch("GenParticle");
   eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
+  eventTree->SetBranchAddress("GsfTrack", &gsftrackArr); TBranch *gsftrackBr = eventTree->GetBranch("GsfTrack");
   cout << "NEvents = " << eventTree->GetEntries() << endl;
 
   
@@ -116,6 +127,7 @@ void analysis(const string inputfile, const string outputfile) {
 
     genparticleBr->GetEntry(ientry);
     electronBr->GetEntry(ientry);
+    gsftrackBr->GetEntry(ientry);
 
     //***********************************************************
     // Event information
@@ -127,6 +139,8 @@ void analysis(const string inputfile, const string outputfile) {
     //***********************************************************
     // Gen-Level particles
     //***********************************************************
+    geneles.clear();
+    genpdgid.clear();
     for(Int_t i=0; i<genparticleArr->GetEntriesFast(); i++) {
       const egmana::TGenParticle *p = (egmana::TGenParticle*)((*genparticleArr)[i]);
 
@@ -170,10 +184,10 @@ void analysis(const string inputfile, const string outputfile) {
         
         TVector3 corrScPos=scPos-genVtxPos;
 
-        RecoEta->Fill(geneles[truee].Eta());
-        RecoPt->Fill(geneles[truee].Pt());
+        // RecoEta->Fill(geneles[truee].Eta());
+        // RecoPt->Fill(geneles[truee].Pt());
         if(ele->isEB) {
-          RecoPtEB->Fill(geneles[truee].Pt());
+          // RecoPtEB->Fill(geneles[truee].Pt());
           ebvars[0]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
           if(geneles[truee].Pt()<20) ebvars[1]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
           else ebvars[2]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
@@ -187,9 +201,16 @@ void analysis(const string inputfile, const string outputfile) {
           ebvars[9+c]->Fill(corrScPos.Eta()-geneles[truee].Eta());
           ebvars[10+c]->Fill(corrScPos.Phi()-geneles[truee].Phi());
           ebvars[11+c]->Fill(corrScPos.DeltaR(geneles[truee]));            
+          ebvars[15]->Fill(ele->TkSeedSubDet2);
+          ebvars[16]->Fill(ele->TkHitsMask);
+          if(ele->TkSeedSubDet2==1) ebvars[17]->Fill(ele->TkHitsMask);
+          if(ele->TkSeedSubDet2==2) ebvars[18]->Fill(ele->TkHitsMask);
+          if(ele->TkSeedSubDet2==6) ebvars[19]->Fill(ele->TkHitsMask);
+          ebvars[20]->Fill(ele->TkSeedDPhi2);
+          ebvars[21]->Fill(ele->TkSeedDRZ2);
         }
         else {
-          RecoPtEE->Fill(geneles[truee].Pt());
+          // RecoPtEE->Fill(geneles[truee].Pt());
           eevars[0]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
           if(geneles[truee].Pt()<20) eevars[1]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
           else eevars[2]->Fill((ele->scEt-geneles[truee].Pt())/geneles[truee].Pt());
@@ -203,12 +224,45 @@ void analysis(const string inputfile, const string outputfile) {
           eevars[9+c]->Fill(corrScPos.Eta()-geneles[truee].Eta());
           eevars[10+c]->Fill(corrScPos.Phi()-geneles[truee].Phi());
           eevars[11+c]->Fill(corrScPos.DeltaR(geneles[truee]));            
+          eevars[15]->Fill(ele->TkSeedSubDet2);
+          eevars[16]->Fill(ele->TkHitsMask);
+          if(ele->TkSeedSubDet2==1) eevars[17]->Fill(ele->TkHitsMask);
+          if(ele->TkSeedSubDet2==2) eevars[18]->Fill(ele->TkHitsMask);
+          if(ele->TkSeedSubDet2==6) eevars[19]->Fill(ele->TkHitsMask);
+          eevars[20]->Fill(ele->TkSeedDPhi2);
+          eevars[21]->Fill(ele->TkSeedDRZ2);
         }          
       }
 
     }
 
+    for(int e=0;e<(int)geneles.size();++e) {
+
+      //********************************************************
+      //Loop Over GSF Tracks
+      //********************************************************
+      for(Int_t i=0; i<gsftrackArr->GetEntriesFast(); i++) {
+        const egmana::TTrack *gsf = (egmana::TTrack*)((*gsftrackArr)[i]);
+        TVector3 thegsf;
+        thegsf.SetPtEtaPhi(gsf->pt,gsf->eta,gsf->phi);
+        
+        bool matchtrk=false;
+        if(fabs(geneles[e].DeltaR(thegsf))<0.01) matchtrk=true;
+
+        if(matchtrk) {
+          RecoEta->Fill(geneles[e].Eta());
+          RecoPt->Fill(geneles[e].Pt());
+          if(fabs(geneles[e].Eta())<1.479) {
+            RecoPtEB->Fill(geneles[e].Pt());
+          } else {
+            RecoPtEE->Fill(geneles[e].Pt());
+          }
+          break;
+        }
+      } // end loop over tracks
+    } // loop over true ele
   }
+
   delete infile;
   infile=0, eventTree=0;      
   delete info;
