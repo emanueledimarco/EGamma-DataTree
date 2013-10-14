@@ -14,6 +14,7 @@
 #include <TH1F.h>                
 #include <TCanvas.h>                
 #include <TVector3.h>
+#include <TMath.h>
 
 // define structures to read in ntuple
 #include "EGamma/DataTree/interface/Types.h"
@@ -21,6 +22,7 @@
 #include "EGamma/DataTree/interface/TGenParticle.hh"
 #include "EGamma/DataTree/interface/TElectron.hh"
 #include "EGamma/DataTree/interface/TTrack.hh"
+#include "EGamma/DataTree/interface/TCluster.hh"
 
 #include "AnalysisTools/Common/interface/EfficiencyEvaluator.hh"
 
@@ -42,6 +44,7 @@ void analysis(const string inputfile, const string outputfile) {
   // histograms to be filled
   TH1F *GenEta = new TH1F("GenEta", "", 25, -2.5, 2.5);
   TH1F *RecoEta = (TH1F*)GenEta->Clone("RecoEta");
+  TH1F *RecoSCEta = (TH1F*)GenEta->Clone("RecoSCEta");
 
 //   Float_t LowerPt[10];
 //   int ipt=0;
@@ -61,6 +64,9 @@ void analysis(const string inputfile, const string outputfile) {
   TH1F *RecoPt = (TH1F*)GenPt->Clone("RecoPt");
   TH1F *RecoPtEB = (TH1F*)GenPt->Clone("RecoPtEB");
   TH1F *RecoPtEE = (TH1F*)GenPt->Clone("RecoPtEE");
+  TH1F *RecoSCPt = (TH1F*)GenPt->Clone("RecoSCPt");
+  TH1F *RecoSCPtEB = (TH1F*)GenPt->Clone("RecoSCPtEB");
+  TH1F *RecoSCPtEE = (TH1F*)GenPt->Clone("RecoSCPtEE");
 
 
   // ID vars
@@ -100,6 +106,7 @@ void analysis(const string inputfile, const string outputfile) {
   TClonesArray *genparticleArr = new TClonesArray("egmana::TGenParticle");
   TClonesArray *electronArr = new TClonesArray("egmana::TElectron");
   TClonesArray *gsftrackArr = new TClonesArray("egmana::TTrack");
+  TClonesArray *sclusterArr = new TClonesArray("egmana::TCluster");
 
   // Read input file and get the TTrees
   cout << "Processing " << inputfile << "..." << endl;
@@ -111,6 +118,7 @@ void analysis(const string inputfile, const string outputfile) {
   eventTree->SetBranchAddress("GenParticle", &genparticleArr); TBranch *genparticleBr = eventTree->GetBranch("GenParticle");
   eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
   eventTree->SetBranchAddress("GsfTrack", &gsftrackArr); TBranch *gsftrackBr = eventTree->GetBranch("GsfTrack");
+  eventTree->SetBranchAddress("SuperCluster", &sclusterArr); TBranch *sclusterBr = eventTree->GetBranch("SuperCluster");
   cout << "NEvents = " << eventTree->GetEntries() << endl;
 
   
@@ -128,6 +136,7 @@ void analysis(const string inputfile, const string outputfile) {
     genparticleBr->GetEntry(ientry);
     electronBr->GetEntry(ientry);
     gsftrackBr->GetEntry(ientry);
+    sclusterBr->GetEntry(ientry);
 
     //***********************************************************
     // Event information
@@ -260,6 +269,35 @@ void analysis(const string inputfile, const string outputfile) {
           break;
         }
       } // end loop over tracks
+
+      //********************************************************
+      //Loop Over Super Clusters
+      //********************************************************
+      for(Int_t i=0; i<sclusterArr->GetEntriesFast(); i++) {
+        const egmana::TCluster *clu = (egmana::TCluster*)((*sclusterArr)[i]);
+
+        float theta=2*atan(TMath::Exp(-clu->eta));
+        float pt=clu->energy * fabs(sin(theta));
+
+        TVector3 theclu;
+        theclu.SetPtEtaPhi(pt,clu->eta,clu->phi);
+        TVector3 corrScPos=theclu-genVtxPos;
+
+        bool matchclu=false;
+        if(fabs(geneles[e].DeltaR(corrScPos))<0.4) matchclu=true;
+
+        if(matchclu) {
+          RecoSCEta->Fill(geneles[e].Eta());
+          RecoSCPt->Fill(geneles[e].Pt());
+          if(fabs(geneles[e].Eta())<1.479) {
+            RecoSCPtEB->Fill(geneles[e].Pt());
+          } else {
+            RecoSCPtEE->Fill(geneles[e].Pt());
+          }
+          break;
+        }
+      } // end loop over tracks
+
     } // loop over true ele
   }
 
@@ -276,6 +314,7 @@ void analysis(const string inputfile, const string outputfile) {
   EfficiencyEvaluator ElectronEffEta("eff_eta.root");
   ElectronEffEta.AddNumerator(GenEta);
   ElectronEffEta.AddNumerator(RecoEta);
+  ElectronEffEta.AddNumerator(RecoSCEta);
   ElectronEffEta.SetDenominator(GenEta);
   ElectronEffEta.ComputeEfficiencies();
   ElectronEffEta.Write();
@@ -283,6 +322,7 @@ void analysis(const string inputfile, const string outputfile) {
   EfficiencyEvaluator ElectronEffPt("eff_pt.root");
   ElectronEffPt.AddNumerator(GenPt);
   ElectronEffPt.AddNumerator(RecoPt);
+  ElectronEffPt.AddNumerator(RecoSCPt);
   ElectronEffPt.SetDenominator(GenPt);
   ElectronEffPt.ComputeEfficiencies();
   ElectronEffPt.Write();
@@ -290,6 +330,7 @@ void analysis(const string inputfile, const string outputfile) {
   EfficiencyEvaluator ElectronEffPtEB("eff_pt_EB.root");
   ElectronEffPtEB.AddNumerator(GenPtEB);
   ElectronEffPtEB.AddNumerator(RecoPtEB);
+  ElectronEffPtEB.AddNumerator(RecoSCPtEB);
   ElectronEffPtEB.SetDenominator(GenPtEB);
   ElectronEffPtEB.ComputeEfficiencies();
   ElectronEffPtEB.Write();
@@ -297,6 +338,7 @@ void analysis(const string inputfile, const string outputfile) {
   EfficiencyEvaluator ElectronEffPtEE("eff_pt_EE.root");
   ElectronEffPtEE.AddNumerator(GenPtEE);
   ElectronEffPtEE.AddNumerator(RecoPtEE);
+  ElectronEffPtEE.AddNumerator(RecoSCPtEE);
   ElectronEffPtEE.SetDenominator(GenPtEE);
   ElectronEffPtEE.ComputeEfficiencies();
   ElectronEffPtEE.Write();
