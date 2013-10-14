@@ -157,7 +157,7 @@ void drawOneToTwo(vector<TH1F*> set1, vector<TH1F*> set2, vector<TH1F*> set3, co
 
 }
 
-void drawEff() {
+void drawSeedingEff() {
   
   gROOT->ProcessLine(".L mystyle.C+");
   setstyle();
@@ -194,6 +194,47 @@ void drawEff() {
   ptSet2.push_back(RecoPtEE2);
 
   drawOneToOne(ptSet1,ptSet2,"ECAL Seeding","PFClu. Seeding","p_{T} (GeV)");
+
+}
+
+
+void drawSuperClusterEff() {
+  
+  gROOT->ProcessLine(".L mystyle.C+");
+  setstyle();
+
+  TFile *file1 = TFile::Open("efficiency_std.root");
+  TFile *file2 = TFile::Open("efficiency_pf.root");
+
+  // eta
+  TH1F *RecoEta1 = (TH1F*)file1->Get("RecoSCEta_Eff");
+  TH1F *RecoEta2 = (TH1F*)file2->Get("RecoSCEta_Eff");
+
+  vector<TH1F*> etaSet1, etaSet2;
+  etaSet1.push_back(RecoEta1);
+  etaSet2.push_back(RecoEta2);
+  
+  drawOneToOne(etaSet1,etaSet2,"ECAL Seeding","PFClu. Seeding","#eta");
+
+  // pt
+  TH1F *RecoPt1 = (TH1F*)file1->Get("RecoSCPt_Eff");
+  TH1F *RecoPtEB1 = (TH1F*)file1->Get("RecoSCPtEB_Eff");
+  TH1F *RecoPtEE1 = (TH1F*)file1->Get("RecoSCPtEE_Eff");
+
+  TH1F *RecoPt2 = (TH1F*)file2->Get("RecoSCPt_Eff");
+  TH1F *RecoPtEB2 = (TH1F*)file2->Get("RecoSCPtEB_Eff");
+  TH1F *RecoPtEE2 = (TH1F*)file2->Get("RecoSCPtEE_Eff");
+
+  vector<TH1F*> ptSet1, ptSet2;
+  ptSet1.push_back(RecoPt1);
+  ptSet1.push_back(RecoPtEB1);
+  ptSet1.push_back(RecoPtEE1);
+
+  ptSet2.push_back(RecoPt2);
+  ptSet2.push_back(RecoPtEB2);
+  ptSet2.push_back(RecoPtEE2);
+
+  drawOneToOne(ptSet1,ptSet2,"ECAL Clusters","PF Clusters","p_{T} (GeV)");
 
 }
 
