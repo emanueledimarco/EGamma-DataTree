@@ -28,6 +28,7 @@ using namespace edm;
 #include "EGamma/DataTree/interface/TElectron.hh"
 #include "EGamma/DataTree/interface/TSeed.hh"
 #include "EGamma/DataTree/interface/TTrack.hh"
+#include "EGamma/DataTree/interface/TCluster.hh"
 #include "EGamma/DataTree/interface/TVertex.hh"
 #include <TClonesArray.h>
 
@@ -62,6 +63,7 @@ class ElectronNtupler : public edm::EDAnalyzer {
     string fPrimaryVerticesBSSrcName;
     string fElectronsSrcName;
     string fGsfTrackSrcName;
+    string fSuperClusterSrcName;
 
     //***************************************************************************
     //OUTPUT
@@ -70,6 +72,7 @@ class ElectronNtupler : public edm::EDAnalyzer {
     TClonesArray           *fGenParticleArr;  // genparticle array
     TClonesArray           *fElectronArr;     // electron array
     TClonesArray           *fGsfTrackArr;     // electron gsf track array
+    TClonesArray           *fSuperClusterArr; // electron supercluster array
     TClonesArray           *fSeedArr;         // electron seeds array
     TClonesArray           *fVertexArr;       // Vertex array
     

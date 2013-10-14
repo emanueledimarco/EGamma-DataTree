@@ -61,6 +61,7 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig)
   fPrimaryVerticesBSSrcName = iConfig.getParameter<string> ("PrimaryVerticesBSSrcName");
   fElectronsSrcName = iConfig.getParameter<string> ("ElectronsSrcName");
   fGsfTrackSrcName = iConfig.getParameter<string> ("GsfTrackSrcName");
+  fSuperClusterSrcName = iConfig.getParameter<string> ("SuperClusterSrcName");
 
   //   debug_ = iConfig.getParameter<int> ("debugLevel");
   fReadAOD = iConfig.getParameter<bool> ("ReadAOD");
@@ -82,6 +83,7 @@ ElectronNtupler::ElectronNtupler(const edm::ParameterSet& iConfig)
   egmana::TGenParticle::Class()->IgnoreTObjectStreamer();
   egmana::TElectron::Class()->IgnoreTObjectStreamer();
   egmana::TTrack::Class()->IgnoreTObjectStreamer();
+  egmana::TCluster::Class()->IgnoreTObjectStreamer();
   egmana::TSeed::Class()->IgnoreTObjectStreamer();
   egmana::TVertex::Class()->IgnoreTObjectStreamer();
   
@@ -116,6 +118,7 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
   fGenParticleArr->Clear();
   fElectronArr->Clear();
   fGsfTrackArr->Clear();
+  fSuperClusterArr->Clear();
   fSeedArr->Clear();
   fVertexArr->Clear();
 
@@ -610,6 +613,31 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   }
 
+  //****************************************************************************************************
+  //Handle to SuperClusters
+  //****************************************************************************************************
+  Handle<reco::SuperClusterCollection> hSuperClusterProduct;
+  GetProduct(fSuperClusterSrcName, hSuperClusterProduct, event);
+  const reco::SuperClusterCollection inSuperClusters = *(hSuperClusterProduct.product());
+ 
+  for (reco::SuperClusterCollection::const_iterator iT = inSuperClusters.begin(); 
+       iT != inSuperClusters.end(); ++iT) {
+    
+    TClonesArray &rSuperClusterArr = *fSuperClusterArr;
+    assert(rSuperClusterArr.GetEntries() < rSuperClusterArr.GetSize());
+    const Int_t index = rSuperClusterArr.GetEntries();  
+    new(rSuperClusterArr[index]) egmana::TCluster();
+    egmana::TCluster *pSuperCluster = (egmana::TCluster*)rSuperClusterArr[index];
+
+    pSuperCluster->energy = iT->energy();
+    pSuperCluster->eta = iT->eta();
+    pSuperCluster->phi = iT->phi();
+
+    pSuperCluster->seedenergy  = iT->seed()->energy();
+    pSuperCluster->seedeta = iT->seed()->eta();
+    pSuperCluster->seedphi = iT->seed()->phi();
+
+  }
 
 
   //
@@ -660,6 +688,7 @@ ElectronNtupler::beginJob()
   fGenParticleArr = new TClonesArray("egmana::TGenParticle"); assert(fGenParticleArr);
   fElectronArr    = new TClonesArray("egmana::TElectron");    assert(fElectronArr);
   fGsfTrackArr    = new TClonesArray("egmana::TTrack");       assert(fGsfTrackArr);
+  fSuperClusterArr = new TClonesArray("egmana::TCluster");    assert(fSuperClusterArr);
   fSeedArr        = new TClonesArray("egmana::TSeed");        assert(fSeedArr);
   fVertexArr      = new TClonesArray("egmana::TVertex");      assert(fVertexArr);
 
@@ -680,6 +709,7 @@ ElectronNtupler::beginJob()
 
   fEventTree->Branch("Electron",   &fElectronArr);
   fEventTree->Branch("GsfTrack",   &fGsfTrackArr);
+  fEventTree->Branch("SuperCluster",  &fSuperClusterArr);
   fEventTree->Branch("Seed",       &fSeedArr);
   fEventTree->Branch("Vertex",     &fVertexArr);
 
