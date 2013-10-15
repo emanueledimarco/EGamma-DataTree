@@ -17,11 +17,6 @@ using namespace std;
 
 void drawOneComparison(vector<TH1F*> histos, vector<TString> descr, TString xaxislabel, const char *filename, TPaveText *t=0) {
   
-  if(histos.size()>3) {
-    cout << "more than 3 histos not implemented." << endl;
-    return;
-  }
-
   if(histos.size()!=descr.size()) {
     cout << "description not complete!" << endl;
     return;
@@ -31,6 +26,7 @@ void drawOneComparison(vector<TH1F*> histos, vector<TString> descr, TString xaxi
   colors.push_back(kRed+1);
   colors.push_back(kAzure-6);
   colors.push_back(kTeal+3);
+  colors.push_back(kBlue+3);
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
@@ -47,7 +43,7 @@ void drawOneComparison(vector<TH1F*> histos, vector<TString> descr, TString xaxi
 
   for(int i=0;i<(int)histos.size();++i) {
     
-    histos[i]->SetMinimum(0);
+    histos[i]->SetMinimum(0.5);
     histos[i]->SetMaximum(1.1);
     histos[i]->SetMarkerSize(2);
     histos[i]->SetMarkerStyle(20);
@@ -86,33 +82,6 @@ void drawOneComparison(vector<TH1F*> histos, vector<TString> descr, TString xaxi
 
 }
 
-void drawOne(vector<TH1F*> set1, vector<TString> bin, const char* desc1, const char* xaxislabel) {
-
-  for(int i=0;i<(int)set1.size();++i) {
-
-    TPaveText* text  = new TPaveText(0.15, 0.9, 0.8, 0.7, "ndc");
-    text->AddText("#sqrt{s} = 8 TeV, L = 19.5 fb^{-1}");
-    text->AddText(bin[i]);
-    text->SetBorderSize(0);
-    text->SetFillStyle(0);
-    text->SetTextAlign(12);
-    text->SetTextFont(32);
-    text->SetTextSize(0.05);
-    text->Draw();
-
-    vector<TH1F*> histos;
-    vector<TString> desc;
-    histos.push_back(set1[i]);
-    desc.push_back(TString(desc1));
-    if(set1[i]==0) {
-      cout << "histogram not found!" << endl;
-      continue;
-    }
-    drawOneComparison(histos,desc,TString(xaxislabel),set1[i]->GetName(),text);
-  }
-
-}
-
 void drawOneToOne(vector<TH1F*> set1, vector<TH1F*> set2, const char* desc1, const char* desc2, const char* xaxislabel) {
   if(set1.size()!=set2.size()) {
     cout << "first set and second set of histos have different sizes! ERROR! " << endl;
@@ -134,46 +103,36 @@ void drawOneToOne(vector<TH1F*> set1, vector<TH1F*> set2, const char* desc1, con
 
 }
 
-void drawOneToTwo(vector<TH1F*> set1, vector<TH1F*> set2, vector<TH1F*> set3, const char* desc1, const char* desc2, const char* desc3, const char* xaxislabel) {
-  if(set1.size()!=set2.size() || set1.size()!=set3.size()) {
-    cout << "first set and second/third set of histos have different sizes! ERROR! " << endl;
-    return;
-  }
-  for(int i=0;i<(int)set1.size();++i) {
-    vector<TH1F*> histos;
-    vector<TString> desc;
-    histos.push_back(set1[i]);
-    histos.push_back(set2[i]);
-    histos.push_back(set3[i]);
-    desc.push_back(TString(desc1));
-    desc.push_back(TString(desc2));
-    desc.push_back(TString(desc3));
-    if(set1[i]==0 || set2[i]==0 || set3[i]==0) {
-      cout << "histogram not found!" << endl;
-      continue;
-    }
-    drawOneComparison(histos,desc,TString(xaxislabel),set1[i]->GetName());
-  }
-
-}
 
 void drawSeedingEff() {
   
   gROOT->ProcessLine(".L mystyle.C+");
   setstyle();
 
-  TFile *file1 = TFile::Open("results_std.root");
-  TFile *file2 = TFile::Open("results_pf.root");
+  TFile *file1 = TFile::Open("efficiency_std.root");
+  TFile *file2 = TFile::Open("efficiency_pfV5.root");
+  TFile *file3 = TFile::Open("efficiency_pfV6.root");
+  TFile *file4 = TFile::Open("efficiency_pfV7.root");
 
   // eta
   TH1F *RecoEta1 = (TH1F*)file1->Get("RecoEta_Eff");
   TH1F *RecoEta2 = (TH1F*)file2->Get("RecoEta_Eff");
+  TH1F *RecoEta3 = (TH1F*)file3->Get("RecoEta_Eff");
+  TH1F *RecoEta4 = (TH1F*)file4->Get("RecoEta_Eff");
 
-  vector<TH1F*> etaSet1, etaSet2;
-  etaSet1.push_back(RecoEta1);
-  etaSet2.push_back(RecoEta2);
+  vector<TH1F*> etaSet;
+  etaSet.push_back(RecoEta1);
+  etaSet.push_back(RecoEta2);
+  etaSet.push_back(RecoEta3);
+  etaSet.push_back(RecoEta4);
   
-  drawOneToOne(etaSet1,etaSet2,"ECAL Seeding","PFClu. Seeding","#eta");
+  vector<TString> descriptions;
+  descriptions.push_back("ECAL Seeding");
+  descriptions.push_back("PF Seeding, std., regr.");
+  descriptions.push_back("PF Seeding, 1 GeV, regr.");
+  descriptions.push_back("PF Seeding, 1 GeV, no regr.");
+
+  drawOneComparison(etaSet,descriptions,"#eta",etaSet[0]->GetName());
 
   // pt
   TH1F *RecoPt1 = (TH1F*)file1->Get("RecoPt_Eff");
@@ -184,16 +143,33 @@ void drawSeedingEff() {
   TH1F *RecoPtEB2 = (TH1F*)file2->Get("RecoPtEB_Eff");
   TH1F *RecoPtEE2 = (TH1F*)file2->Get("RecoPtEE_Eff");
 
-  vector<TH1F*> ptSet1, ptSet2;
-  ptSet1.push_back(RecoPt1);
-  ptSet1.push_back(RecoPtEB1);
-  ptSet1.push_back(RecoPtEE1);
+  TH1F *RecoPt3 = (TH1F*)file3->Get("RecoPt_Eff");
+  TH1F *RecoPtEB3 = (TH1F*)file3->Get("RecoPtEB_Eff");
+  TH1F *RecoPtEE3 = (TH1F*)file3->Get("RecoPtEE_Eff");
 
-  ptSet2.push_back(RecoPt2);
-  ptSet2.push_back(RecoPtEB2);
-  ptSet2.push_back(RecoPtEE2);
+  TH1F *RecoPt4 = (TH1F*)file4->Get("RecoPt_Eff");
+  TH1F *RecoPtEB4 = (TH1F*)file4->Get("RecoPtEB_Eff");
+  TH1F *RecoPtEE4 = (TH1F*)file4->Get("RecoPtEE_Eff");
 
-  drawOneToOne(ptSet1,ptSet2,"ECAL Seeding","PFClu. Seeding","p_{T} (GeV)");
+  vector<TH1F*> ptSet, ptSetEB, ptSetEE;
+  ptSet.push_back(RecoPt1);
+  ptSet.push_back(RecoPt2);
+  ptSet.push_back(RecoPt3);
+  ptSet.push_back(RecoPt4);
+
+  ptSetEB.push_back(RecoPtEB1);
+  ptSetEB.push_back(RecoPtEB2);
+  ptSetEB.push_back(RecoPtEB3);
+  ptSetEB.push_back(RecoPtEB4);
+
+  ptSetEE.push_back(RecoPtEE1);
+  ptSetEE.push_back(RecoPtEE2);
+  ptSetEE.push_back(RecoPtEE3);
+  ptSetEE.push_back(RecoPtEE4);
+
+  drawOneComparison(ptSet,descriptions,"p_{T} (GeV)",ptSet[0]->GetName());
+  drawOneComparison(ptSetEB,descriptions,"p_{T} (GeV)",ptSetEB[0]->GetName());
+  drawOneComparison(ptSetEE,descriptions,"p_{T} (GeV)",ptSetEE[0]->GetName());
 
 }
 
@@ -204,17 +180,29 @@ void drawSuperClusterEff() {
   setstyle();
 
   TFile *file1 = TFile::Open("efficiency_std.root");
-  TFile *file2 = TFile::Open("efficiency_pf.root");
+  TFile *file2 = TFile::Open("efficiency_pfV5.root");
+  TFile *file3 = TFile::Open("efficiency_pfV6.root");
+  TFile *file4 = TFile::Open("efficiency_pfV7.root");
 
   // eta
   TH1F *RecoEta1 = (TH1F*)file1->Get("RecoSCEta_Eff");
   TH1F *RecoEta2 = (TH1F*)file2->Get("RecoSCEta_Eff");
+  TH1F *RecoEta3 = (TH1F*)file3->Get("RecoSCEta_Eff");
+  TH1F *RecoEta4 = (TH1F*)file4->Get("RecoSCEta_Eff");
 
-  vector<TH1F*> etaSet1, etaSet2;
-  etaSet1.push_back(RecoEta1);
-  etaSet2.push_back(RecoEta2);
-  
-  drawOneToOne(etaSet1,etaSet2,"ECAL Seeding","PFClu. Seeding","#eta");
+  vector<TH1F*> etaSet;
+  etaSet.push_back(RecoEta1);
+  etaSet.push_back(RecoEta2);
+  etaSet.push_back(RecoEta3);
+  etaSet.push_back(RecoEta4);
+
+  vector<TString> descriptions;
+  descriptions.push_back("ECAL Seeding");
+  descriptions.push_back("PF Seeding, std., regr.");
+  descriptions.push_back("PF Seeding, 1 GeV, regr.");
+  descriptions.push_back("PF Seeding, 1 GeV, no regr.");
+
+  drawOneComparison(etaSet,descriptions,"#eta",etaSet[0]->GetName());
 
   // pt
   TH1F *RecoPt1 = (TH1F*)file1->Get("RecoSCPt_Eff");
@@ -225,16 +213,33 @@ void drawSuperClusterEff() {
   TH1F *RecoPtEB2 = (TH1F*)file2->Get("RecoSCPtEB_Eff");
   TH1F *RecoPtEE2 = (TH1F*)file2->Get("RecoSCPtEE_Eff");
 
-  vector<TH1F*> ptSet1, ptSet2;
-  ptSet1.push_back(RecoPt1);
-  ptSet1.push_back(RecoPtEB1);
-  ptSet1.push_back(RecoPtEE1);
+  TH1F *RecoPt3 = (TH1F*)file3->Get("RecoSCPt_Eff");
+  TH1F *RecoPtEB3 = (TH1F*)file3->Get("RecoSCPtEB_Eff");
+  TH1F *RecoPtEE3 = (TH1F*)file3->Get("RecoSCPtEE_Eff");
 
-  ptSet2.push_back(RecoPt2);
-  ptSet2.push_back(RecoPtEB2);
-  ptSet2.push_back(RecoPtEE2);
+  TH1F *RecoPt4 = (TH1F*)file4->Get("RecoSCPt_Eff");
+  TH1F *RecoPtEB4 = (TH1F*)file4->Get("RecoSCPtEB_Eff");
+  TH1F *RecoPtEE4 = (TH1F*)file4->Get("RecoSCPtEE_Eff");
 
-  drawOneToOne(ptSet1,ptSet2,"ECAL Clusters","PF Clusters","p_{T} (GeV)");
+  vector<TH1F*> ptSet, ptSetEB, ptSetEE;
+  ptSet.push_back(RecoPt1);
+  ptSet.push_back(RecoPt2);
+  ptSet.push_back(RecoPt3);
+  ptSet.push_back(RecoPt4);
+
+  ptSetEB.push_back(RecoPtEB1);
+  ptSetEB.push_back(RecoPtEB2);
+  ptSetEB.push_back(RecoPtEB3);
+  ptSetEB.push_back(RecoPtEB4);
+
+  ptSetEE.push_back(RecoPtEE1);
+  ptSetEE.push_back(RecoPtEE2);
+  ptSetEE.push_back(RecoPtEE3);
+  ptSetEE.push_back(RecoPtEE4);
+
+  drawOneComparison(ptSet,descriptions,"p_{T} (GeV)",ptSet[0]->GetName());
+  drawOneComparison(ptSetEB,descriptions,"p_{T} (GeV)",ptSetEB[0]->GetName());
+  drawOneComparison(ptSetEE,descriptions,"p_{T} (GeV)",ptSetEE[0]->GetName());
 
 }
 
