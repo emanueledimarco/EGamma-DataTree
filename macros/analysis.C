@@ -92,8 +92,8 @@ void analysis(const string inputfile, const string outputfile) {
   ebvars.push_back(new TH1F("seedhitsmaskBPIX2_eb","",13,0,13));
   ebvars.push_back(new TH1F("seedhitsmaskFPIX2_eb","",13,0,13));
   ebvars.push_back(new TH1F("seedhitsmaskTEC2_eb","",13,0,13));
-  ebvars.push_back(new TH1F("seeddphi2_eb","",50,0,0.01));
-  ebvars.push_back(new TH1F("seedrz2_eb","",50,0,0.03));
+  ebvars.push_back(new TH1F("seeddphi2_eb","",50,-0.01,0.01));
+  ebvars.push_back(new TH1F("seedrz2_eb","",50,-0.03,0.03));
   
   for(int i=0;i<(int)ebvars.size();++i) {
     TString nameeb(ebvars[i]->GetName());
