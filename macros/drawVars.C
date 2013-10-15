@@ -82,7 +82,7 @@ void drawOne(TString var, TString title, const char* file1, const char* file2) {
 
   c1.SaveAs(pdf);
   c1.SaveAs(png);
-  c1.SaveAs(macro);
+  //  c1.SaveAs(macro);
 
 }
 
@@ -193,7 +193,7 @@ void drawOneReso(TString var, TString title, const char* file1, const char* file
 
   c1.SaveAs(pdf);
   c1.SaveAs(png);
-  c1.SaveAs(macro);
+  //  c1.SaveAs(macro);
 
 }
 
@@ -204,33 +204,47 @@ void drawVars(const char *file1, const char* file2) {
   setstyle();
 
   vector<TString> vars;
-  vars.push_back("reso_eb");
-  vars.push_back("hoe_eb");
-  vars.push_back("deta_eb");
-  vars.push_back("dphi_eb");
-  vars.push_back("etareso_eb");
+  vars.push_back("etareso_eb"); // 0
   vars.push_back("phireso_eb");
   vars.push_back("drreso_eb");
+  vars.push_back("reso_eb");
+  vars.push_back("hoe_eb"); // 4
+  vars.push_back("deta_eb");
+  vars.push_back("dphi_eb");
+  vars.push_back("seedsubdet2_eb");
+  vars.push_back("seedhitsmask_eb");
+  vars.push_back("seedhitsmaskBPIX2_eb");
+  vars.push_back("seedhitsmaskFPIX2_eb");
+  vars.push_back("seedhitsmaskTEC2_eb");
+  vars.push_back("seeddphi2_eb");
+  vars.push_back("seedrz2_eb");
 
   vector<TString> titles;
+  titles.push_back("#Delta#eta (SC - true)");
+  titles.push_back("#Delta#phi (SC - true)");
+  titles.push_back("#DeltaR (SC - true)");
   titles.push_back("#DeltaE/E");
   titles.push_back("H/E");
   titles.push_back("#Delta#eta_{in}");
   titles.push_back("#Delta#phi_{in}");
-  titles.push_back("#Delta#eta (SC - true)");
-  titles.push_back("#Delta#phi (SC - true)");
-  titles.push_back("#DeltaR (SC - true)");
+  titles.push_back("seed subdet. 2^{nd} layer");
+  titles.push_back("seed hits mask");
+  titles.push_back("seed hits mask, 2^{nd} is BPIX");
+  titles.push_back("seed hits mask, 2^{nd} is FPIX");
+  titles.push_back("seed hits mask, 2^{nd} is TEC");
+  titles.push_back("seed #phi_{hit}-#phi_{pred} (rad)");
+  titles.push_back("seed r(z)_{hit}-r(z)_{pred} (cm)");
 
-  for(int i=0;i<4;++i) {
-    drawOne(vars[i],titles[i],file1,file2);
-    TString nameee = vars[i].ReplaceAll("_eb","_ee");
-    drawOne(nameee,titles[i],file1,file2);
-  }
-
-  for(int i=4;i<(int)vars.size();++i) {
+  for(int i=0;i<3;++i) {
     drawOneReso(vars[i],titles[i],file1,file2);
     TString nameee = vars[i].ReplaceAll("_eb","_ee");
     drawOneReso(nameee,titles[i],file1,file2);
+  }
+
+  for(int i=3;i<(int)vars.size();++i) {
+    drawOne(vars[i],titles[i],file1,file2);
+    TString nameee = vars[i].ReplaceAll("_eb","_ee");
+    drawOne(nameee,titles[i],file1,file2);
   }
 
 }
