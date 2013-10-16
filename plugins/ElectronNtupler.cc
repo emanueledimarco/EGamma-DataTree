@@ -609,6 +609,11 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
     
     pGsfTrack->q = iT->charge();
 
+    edm::RefToBase<TrajectorySeed> seed = iT->extra()->seedRef();
+    ElectronSeedRef elseed=seed.castTo<ElectronSeedRef>();
+    pGsfTrack->isEcalDriven = elseed->isEcalDriven();
+    pGsfTrack->isTrackerDriven = elseed->isTrackerDriven();
+
   }
 
   //****************************************************************************************************

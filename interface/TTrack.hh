@@ -17,6 +17,8 @@ namespace egmana
         vy = -999;
         vz = -999;
         q = -99;  
+        isEcalDriven = false;
+        isTrackerDriven = false;
 
       }
 
@@ -25,6 +27,8 @@ namespace egmana
     Float_t pt, eta, phi;     // kinematics
     Float_t vx, vy, vz;       // vertex  position
     Int_t q;                  // charge
+    Bool_t isEcalDriven;         // is ECAL seeded electron track?
+    Bool_t isTrackerDriven;      // is TrackerDriven electron track?
 
     ClassDef(TTrack,2)
   };
