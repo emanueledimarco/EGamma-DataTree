@@ -375,10 +375,6 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
     }
 
     pElectron->q               = iE->charge();
-
-
-    pElectron->isEcalDriven    = iE->ecalDrivenSeed();
-    pElectron->isTrackerDriven = iE->trackerDrivenSeed();
     pElectron->isEB            = iE->isEB();
     pElectron->isEE            = iE->isEE();
     pElectron->Classification  = iE->classification();
@@ -533,7 +529,9 @@ ElectronNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
       pElectron->TkSeedDRZ2 = elseed->dRz2();
       pElectron->TkSeedSubDet2 = elseed->subDet2();
       pElectron->TkHitsMask = elseed->hitsMask();
-
+      
+      pElectron->isEcalDriven    = elseed->isEcalDriven();
+      pElectron->isTrackerDriven = elseed->isTrackerDriven();
       
     }
 
