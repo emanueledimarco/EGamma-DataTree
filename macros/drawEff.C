@@ -110,27 +110,27 @@ void drawSeedingEff() {
   setstyle();
 
   TFile *file1 = TFile::Open("efficiency_std.root");
-  TFile *file2 = TFile::Open("efficiency_pfV5.root");
-  TFile *file3 = TFile::Open("efficiency_pfV6.root");
-  TFile *file4 = TFile::Open("efficiency_pfV7.root");
+  TFile *file2 = TFile::Open("efficiency_pfV10.root");
+//   TFile *file3 = TFile::Open("efficiency_pfV6.root");
+//   TFile *file4 = TFile::Open("efficiency_pfV10.root");
 
   // eta
   TH1F *RecoEta1 = (TH1F*)file1->Get("RecoEta_Eff");
   TH1F *RecoEta2 = (TH1F*)file2->Get("RecoEta_Eff");
-  TH1F *RecoEta3 = (TH1F*)file3->Get("RecoEta_Eff");
-  TH1F *RecoEta4 = (TH1F*)file4->Get("RecoEta_Eff");
+//   TH1F *RecoEta3 = (TH1F*)file3->Get("RecoEta_Eff");
+//   TH1F *RecoEta4 = (TH1F*)file4->Get("RecoEta_Eff");
 
   vector<TH1F*> etaSet;
   etaSet.push_back(RecoEta1);
   etaSet.push_back(RecoEta2);
-  etaSet.push_back(RecoEta3);
-  etaSet.push_back(RecoEta4);
+//   etaSet.push_back(RecoEta3);
+//   etaSet.push_back(RecoEta4);
   
   vector<TString> descriptions;
   descriptions.push_back("ECAL Seeding");
-  descriptions.push_back("PF Seeding, std., regr.");
-  descriptions.push_back("PF Seeding, 1 GeV, regr.");
-  descriptions.push_back("PF Seeding, 1 GeV, no regr.");
+  descriptions.push_back("PF Seeding, 700_pre8");
+//   descriptions.push_back("PF Seeding, 1 GeV, regr.");
+//   descriptions.push_back("PF Seeding, 1 GeV, no regr.");
 
   drawOneComparison(etaSet,descriptions,"#eta",etaSet[0]->GetName());
 
@@ -143,29 +143,29 @@ void drawSeedingEff() {
   TH1F *RecoPtEB2 = (TH1F*)file2->Get("RecoPtEB_Eff");
   TH1F *RecoPtEE2 = (TH1F*)file2->Get("RecoPtEE_Eff");
 
-  TH1F *RecoPt3 = (TH1F*)file3->Get("RecoPt_Eff");
-  TH1F *RecoPtEB3 = (TH1F*)file3->Get("RecoPtEB_Eff");
-  TH1F *RecoPtEE3 = (TH1F*)file3->Get("RecoPtEE_Eff");
+//   TH1F *RecoPt3 = (TH1F*)file3->Get("RecoPt_Eff");
+//   TH1F *RecoPtEB3 = (TH1F*)file3->Get("RecoPtEB_Eff");
+//   TH1F *RecoPtEE3 = (TH1F*)file3->Get("RecoPtEE_Eff");
 
-  TH1F *RecoPt4 = (TH1F*)file4->Get("RecoPt_Eff");
-  TH1F *RecoPtEB4 = (TH1F*)file4->Get("RecoPtEB_Eff");
-  TH1F *RecoPtEE4 = (TH1F*)file4->Get("RecoPtEE_Eff");
+//   TH1F *RecoPt4 = (TH1F*)file4->Get("RecoPt_Eff");
+//   TH1F *RecoPtEB4 = (TH1F*)file4->Get("RecoPtEB_Eff");
+//   TH1F *RecoPtEE4 = (TH1F*)file4->Get("RecoPtEE_Eff");
 
   vector<TH1F*> ptSet, ptSetEB, ptSetEE;
   ptSet.push_back(RecoPt1);
   ptSet.push_back(RecoPt2);
-  ptSet.push_back(RecoPt3);
-  ptSet.push_back(RecoPt4);
+//   ptSet.push_back(RecoPt3);
+//   ptSet.push_back(RecoPt4);
 
   ptSetEB.push_back(RecoPtEB1);
   ptSetEB.push_back(RecoPtEB2);
-  ptSetEB.push_back(RecoPtEB3);
-  ptSetEB.push_back(RecoPtEB4);
+//   ptSetEB.push_back(RecoPtEB3);
+//   ptSetEB.push_back(RecoPtEB4);
 
   ptSetEE.push_back(RecoPtEE1);
   ptSetEE.push_back(RecoPtEE2);
-  ptSetEE.push_back(RecoPtEE3);
-  ptSetEE.push_back(RecoPtEE4);
+//   ptSetEE.push_back(RecoPtEE3);
+//   ptSetEE.push_back(RecoPtEE4);
 
   drawOneComparison(ptSet,descriptions,"p_{T} (GeV)",ptSet[0]->GetName());
   drawOneComparison(ptSetEB,descriptions,"p_{T} (GeV)",ptSetEB[0]->GetName());
@@ -180,27 +180,27 @@ void drawSuperClusterEff() {
   setstyle();
 
   TFile *file1 = TFile::Open("efficiency_std.root");
-  TFile *file2 = TFile::Open("efficiency_pfV5.root");
-  TFile *file3 = TFile::Open("efficiency_pfV6.root");
-  TFile *file4 = TFile::Open("efficiency_pfV7.root");
+  TFile *file2 = TFile::Open("efficiency_pfV10.root");
+//   TFile *file3 = TFile::Open("efficiency_pfV6.root");
+//   TFile *file4 = TFile::Open("efficiency_pfV7.root");
 
   // eta
   TH1F *RecoEta1 = (TH1F*)file1->Get("RecoSCEta_Eff");
   TH1F *RecoEta2 = (TH1F*)file2->Get("RecoSCEta_Eff");
-  TH1F *RecoEta3 = (TH1F*)file3->Get("RecoSCEta_Eff");
-  TH1F *RecoEta4 = (TH1F*)file4->Get("RecoSCEta_Eff");
+//   TH1F *RecoEta3 = (TH1F*)file3->Get("RecoSCEta_Eff");
+//   TH1F *RecoEta4 = (TH1F*)file4->Get("RecoSCEta_Eff");
 
   vector<TH1F*> etaSet;
   etaSet.push_back(RecoEta1);
   etaSet.push_back(RecoEta2);
-  etaSet.push_back(RecoEta3);
-  etaSet.push_back(RecoEta4);
+//   etaSet.push_back(RecoEta3);
+//   etaSet.push_back(RecoEta4);
 
   vector<TString> descriptions;
   descriptions.push_back("ECAL Seeding");
-  descriptions.push_back("PF Seeding, std., regr.");
-  descriptions.push_back("PF Seeding, 1 GeV, regr.");
-  descriptions.push_back("PF Seeding, 1 GeV, no regr.");
+  descriptions.push_back("PF Seeding, 7000_pre8");
+//   descriptions.push_back("PF Seeding, 1 GeV, regr.");
+//   descriptions.push_back("PF Seeding, 1 GeV, no regr.");
 
   drawOneComparison(etaSet,descriptions,"#eta",etaSet[0]->GetName());
 
@@ -213,29 +213,29 @@ void drawSuperClusterEff() {
   TH1F *RecoPtEB2 = (TH1F*)file2->Get("RecoSCPtEB_Eff");
   TH1F *RecoPtEE2 = (TH1F*)file2->Get("RecoSCPtEE_Eff");
 
-  TH1F *RecoPt3 = (TH1F*)file3->Get("RecoSCPt_Eff");
-  TH1F *RecoPtEB3 = (TH1F*)file3->Get("RecoSCPtEB_Eff");
-  TH1F *RecoPtEE3 = (TH1F*)file3->Get("RecoSCPtEE_Eff");
+//   TH1F *RecoPt3 = (TH1F*)file3->Get("RecoSCPt_Eff");
+//   TH1F *RecoPtEB3 = (TH1F*)file3->Get("RecoSCPtEB_Eff");
+//   TH1F *RecoPtEE3 = (TH1F*)file3->Get("RecoSCPtEE_Eff");
 
-  TH1F *RecoPt4 = (TH1F*)file4->Get("RecoSCPt_Eff");
-  TH1F *RecoPtEB4 = (TH1F*)file4->Get("RecoSCPtEB_Eff");
-  TH1F *RecoPtEE4 = (TH1F*)file4->Get("RecoSCPtEE_Eff");
+//   TH1F *RecoPt4 = (TH1F*)file4->Get("RecoSCPt_Eff");
+//   TH1F *RecoPtEB4 = (TH1F*)file4->Get("RecoSCPtEB_Eff");
+//   TH1F *RecoPtEE4 = (TH1F*)file4->Get("RecoSCPtEE_Eff");
 
   vector<TH1F*> ptSet, ptSetEB, ptSetEE;
   ptSet.push_back(RecoPt1);
   ptSet.push_back(RecoPt2);
-  ptSet.push_back(RecoPt3);
-  ptSet.push_back(RecoPt4);
+//   ptSet.push_back(RecoPt3);
+//   ptSet.push_back(RecoPt4);
 
   ptSetEB.push_back(RecoPtEB1);
   ptSetEB.push_back(RecoPtEB2);
-  ptSetEB.push_back(RecoPtEB3);
-  ptSetEB.push_back(RecoPtEB4);
+//   ptSetEB.push_back(RecoPtEB3);
+//   ptSetEB.push_back(RecoPtEB4);
 
   ptSetEE.push_back(RecoPtEE1);
   ptSetEE.push_back(RecoPtEE2);
-  ptSetEE.push_back(RecoPtEE3);
-  ptSetEE.push_back(RecoPtEE4);
+//   ptSetEE.push_back(RecoPtEE3);
+//   ptSetEE.push_back(RecoPtEE4);
 
   drawOneComparison(ptSet,descriptions,"p_{T} (GeV)",ptSet[0]->GetName());
   drawOneComparison(ptSetEB,descriptions,"p_{T} (GeV)",ptSetEB[0]->GetName());
