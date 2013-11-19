@@ -25,6 +25,9 @@ void drawOne(TString var, TString title, const char* file1, const char* file2) {
 
   h1->Sumw2();
   h2->Sumw2();
+
+  h1->Rebin(2);
+  h2->Rebin(2);
   
   float norm1 = h1->Integral();
   float norm2 = h2->Integral();
@@ -34,6 +37,7 @@ void drawOne(TString var, TString title, const char* file1, const char* file2) {
   float max = TMath::Max(h1->GetMaximum(),h2->GetMaximum());
   max = max + 0.2 * max;
   h2->SetMaximum(max);
+  h1->SetMaximum(max);
 
   h1->SetLineColor(kAzure+3);
   h1->SetLineWidth(2);
