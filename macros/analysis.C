@@ -186,7 +186,7 @@ void analysis(const string inputfile, const string outputfile) {
       
       int truee=-1;
       for(int e=0;e<(int)geneles.size();++e) 
-        if(fabs(geneles[e].DeltaR(theele))<0.01) truee=e;
+        if(fabs(geneles[e].DeltaR(theele))<0.2) truee=e;
 
       if(truee>0) {
         TVector3 scPos(ele->scX,ele->scY,ele->scZ);
@@ -256,7 +256,7 @@ void analysis(const string inputfile, const string outputfile) {
         thegsf.SetPtEtaPhi(gsf->pt,gsf->eta,gsf->phi);
         
         bool matchtrk=false;
-        if(fabs(geneles[e].DeltaR(thegsf))<0.01) matchtrk=true;
+        if(fabs(geneles[e].DeltaR(thegsf))<0.2) matchtrk=true;
 
         if(matchtrk) {
           RecoEta->Fill(geneles[e].Eta());
